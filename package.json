@@ -1,0 +1,22 @@
+{
+  "name": "guitar-trainer",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Melodyn/guitar-trainer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Melodyn/guitar-trainer/issues"
+  },
+  "homepage": "https://github.com/Melodyn/guitar-trainer#readme"
+}
