@@ -1,24 +1,27 @@
-import notes from './notes.js';
+import {
+  allNotes,
+  fullNotes,
+  //
+  allNotesCount,
+  fullNotesCount,
+  //
+  scales,
+  gammaSteps,
+  chordSteps,
+} from './constants.js';
 
-const fullNotes = notes.map(([note]) => (note.length === 1 ? note : null)).filter(n => n);
-const fullNotesCount = 7;
-const allNotesCount = 12;
-
-const majorSteps = '2212221'.split('').map(parseFloat);
-const minorSteps = '2122122'.split('').map(parseFloat);
-
-const buildGamma = (fromNote, toneSteps) => {
-  let noteIndex = notes.findIndex((tones) => tones.some((tone) => (tone === fromNote)));
+const buildGamma = (fromNote, steps) => {
+  let noteIndex = allNotes.findIndex((tones) => tones.some((tone) => (tone === fromNote)));
   if (noteIndex === -1) return null;
   const fullNoteFirstIndex = fullNotes.findIndex((note) => fromNote.includes(note)) + 1;
 
   const gammaNotes = [];
   for (let i = 0; i < fullNotesCount; i += 1) {
-    const toneStep = toneSteps[i];
+    const toneStep = steps[i];
     const fullNoteIndex = (fullNoteFirstIndex + i) % fullNotesCount;
     const fullNote = fullNotes[fullNoteIndex];
     noteIndex = (noteIndex + toneStep) % allNotesCount;
-    const tones = notes[noteIndex];
+    const tones = allNotes[noteIndex];
     const note = tones.find((tone) => tone.includes(fullNote));
     gammaNotes.push(note);
   }
@@ -26,5 +29,14 @@ const buildGamma = (fromNote, toneSteps) => {
   return gammaNotes;
 };
 
-console.log(buildGamma('Bb', majorSteps));
-console.log(buildGamma('G#', minorSteps));
+const buildChord = (fromNote, scale) => {
+  const gamma = buildGamma(fromNote, gammaSteps[scale.name]);
+  const currentChordSteps = chordSteps[scale.name];
+  const chordNotes = currentChordSteps.map((chordStep) => gamma[chordStep]);
+  chordNotes.unshift(fromNote);
+
+  return chordNotes;
+};
+
+console.log(buildChord('F', scales.major));
+console.log(buildChord('F', scales.minor));
