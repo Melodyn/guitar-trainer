@@ -14,10 +14,10 @@ export const allNotes = [
 ];
 allNotes.forEach((note, index) => {
   note.index = index;
-  allNotes[note.tone.replace('#', 'd')] = note;
-  if (note.alterTone.length > 0) {
-    allNotes[note.alterTone.replace('#', 'd')] = note;
-  }
+  // allNotes[note.tone.replace('#', 'd')] = note;
+  // if (note.alterTone.length > 0) {
+  //   allNotes[note.alterTone.replace('#', 'd')] = note;
+  // }
   note.is = (tone) => ((note.tone === tone) || note.alterTone === tone);
   note.getTone = (tone) => {
     if (note.tone.includes(tone)) {
@@ -66,7 +66,7 @@ export const chordSteps = {
   [scales.major.name]: '13'.split('').map(parseFloat),
 };
 
-export const giutarTunings = {
+export const guitarTunings = {
   classic: [
     {
       note: allNotes.find(({ tone }) => (tone === 'E')),
@@ -94,10 +94,18 @@ export const giutarTunings = {
     },
   ],
 };
-Object.values(giutarTunings).forEach((tuning) => {
+Object.values(guitarTunings).forEach((tuning) => {
   tuning.forEach((string, order) => {
     string.order = order + 1;
-    string.fret = 0;
+    string.notes = [];
+    let octaveIndex = string.octave.index;
+    for (let noteOrder = string.note.index; noteOrder <= allNotes.length + string.note.index; noteOrder += 1) {
+      const noteIndex = noteOrder % allNotes.length;
+      octaveIndex += (noteIndex === 0) ? 1 : 0;
+      const octave = octaves[octaveIndex];
+      const note = allNotes[noteIndex];
+      string.notes.push({ ...note, octave: { ...octave } });
+    }
   });
   tuning.getStringByOrder = (order) => tuning[(order - 1) % tuning.length];
 });

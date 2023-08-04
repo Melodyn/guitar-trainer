@@ -1,4 +1,4 @@
-import { gammaSteps, scales, giutarTunings } from '../constants';
+import { gammaSteps, scales, guitarTunings } from '../constants.js';
 import { buildGamma, buildChord, calcFret } from '../index.js';
 
 describe('major', () => {
@@ -15,7 +15,7 @@ describe('major', () => {
   });
 
   test('calcFret Db', () => {
-    expect(calcFret('Db', giutarTunings.classic.getStringByOrder(6))).toEqual(9);
+    expect(calcFret('Db', guitarTunings.classic.getStringByOrder(6))).toEqual(9);
   });
 
   // B
@@ -33,7 +33,7 @@ describe('major', () => {
   });
 
   test('calcFret B', () => {
-    expect(calcFret('B', giutarTunings.classic.getStringByOrder(2))).toEqual(0);
+    expect(calcFret('B', guitarTunings.classic.getStringByOrder(2))).toEqual(0);
   });
 });
 
@@ -51,7 +51,7 @@ describe('minor', () => {
   });
 
   test('calcFret G', () => {
-    expect(calcFret('G', giutarTunings.classic.getStringByOrder(5))).toEqual(10);
+    expect(calcFret('G', guitarTunings.classic.getStringByOrder(5))).toEqual(10);
   });
 
   // E
@@ -69,6 +69,43 @@ describe('minor', () => {
   });
 
   test('calcFret E', () => {
-    expect(calcFret('E', giutarTunings.classic.getStringByOrder(3))).toEqual(9);
+    expect(calcFret('E', guitarTunings.classic.getStringByOrder(3))).toEqual(9);
+  });
+});
+
+const noteExpect = {
+  tone: expect.any(String),
+  alterTone: expect.any(String),
+  octaveOrder: expect.any(Number),
+  index: expect.any(Number),
+  is: expect.any(Function),
+  getTone: expect.any(Function),
+};
+const octaveExpect = {
+  nameRus: expect.any(String),
+  sinceNumber: expect.any(Number),
+  color: expect.any(String),
+  index: expect.any(Number),
+};
+
+describe('guitar classic tuning', () => {
+  test('has strings', () => {
+    expect(guitarTunings.classic).toEqual(expect.arrayContaining([
+      {
+        note: noteExpect,
+        octave: octaveExpect,
+        order: expect.any(Number),
+        notes: expect.any(Array),
+      },
+    ]));
+  });
+
+  test('second string has notes', () => {
+    expect(guitarTunings.classic[1].notes).toEqual(expect.arrayContaining([
+      {
+        ...noteExpect,
+        octave: octaveExpect,
+      },
+    ]));
   });
 });

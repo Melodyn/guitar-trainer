@@ -5,11 +5,8 @@ import {
   allNotesCount,
   fullNotesCount,
   //
-  scales,
   gammaSteps,
   chordSteps,
-  //
-  giutarTunings,
 } from './constants.js';
 
 export const buildGamma = (fromNote, steps) => {
