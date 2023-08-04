@@ -10,7 +10,7 @@ export const allNotes = [
   { tone: 'G#', alterTone: 'Ab', octaveOrder: 9 },
   { tone: 'A', alterTone: '', octaveOrder: 10 },
   { tone: 'A#', alterTone: 'Bb', octaveOrder: 11 },
-  { tone: 'B', alterTone: 'Cb', octaveOrder: 12 }
+  { tone: 'B', alterTone: 'Cb', octaveOrder: 12 },
 ];
 allNotes.forEach((note, index) => {
   note.index = index;
@@ -19,9 +19,17 @@ allNotes.forEach((note, index) => {
     allNotes[note.alterTone.replace('#', 'd')] = note;
   }
   note.is = (tone) => ((note.tone === tone) || note.alterTone === tone);
+  note.getTone = (tone) => {
+    if (note.tone.includes(tone)) {
+      return note.tone;
+    }
+    return note.alterTone.includes(tone) ? note.alterTone : null;
+  };
 });
 
-export const fullNotes = allNotes.map(({ tone }) => (tone.length === 1 ? tone : null)).filter(n => n);
+export const fullNotes = allNotes
+  .map((note) => (note.tone.length === 1 ? note : null))
+  .filter((n) => n);
 
 const octaves = [
   { nameRus: 'большая', sinceNumber: 2, color: '#bdd6ac' },
@@ -32,7 +40,7 @@ const octaves = [
 ];
 octaves.forEach((octave, index) => {
   octave.index = index;
-})
+});
 
 export const fullNotesCount = fullNotes.length;
 export const allNotesCount = allNotes.length;
@@ -90,6 +98,6 @@ Object.values(giutarTunings).forEach((tuning) => {
   tuning.forEach((string, order) => {
     string.order = order + 1;
     string.fret = 0;
-  })
+  });
   tuning.getStringByOrder = (order) => tuning[(order - 1) % tuning.length];
 });

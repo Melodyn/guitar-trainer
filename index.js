@@ -12,26 +12,29 @@ import {
   giutarTunings,
 } from './constants.js';
 
-const buildGamma = (fromNote, steps) => {
+export const buildGamma = (fromNote, steps) => {
   let noteIndex = allNotes.findIndex((note) => note.is(fromNote));
   if (noteIndex === -1) return null;
-  const fullNoteFirstIndex = fullNotes.findIndex((note) => fromNote.includes(note)) + 1;
+  const firstFullNoteOrder = fullNotes.findIndex((note) => fromNote.includes(note.tone)) + 1;
 
   const gammaNotes = [];
-  for (let i = 0; i < fullNotesCount; i += 1) {
-    const toneStep = steps[i];
-    const fullNoteIndex = (fullNoteFirstIndex + i) % fullNotesCount;
+  for (let step = 0; step < fullNotesCount; step += 1) {
+    const toneStep = steps[step];
+    const fullNoteIndex = (firstFullNoteOrder + step) % fullNotesCount;
     const fullNote = fullNotes[fullNoteIndex];
     noteIndex = (noteIndex + toneStep) % allNotesCount;
     const note = allNotes[noteIndex];
-    const tone = [note.tone, note.alterTone].find((tone) => tone.includes(fullNote));
+    const tone = note.getTone(fullNote.tone);
+    if (!tone) {
+      throw new Error(`Note ${note.tone} does not contain a tone ${fullNote.tone}`);
+    }
     gammaNotes.push(tone);
   }
 
   return gammaNotes;
 };
 
-const buildChord = (fromNote, scale) => {
+export const buildChord = (fromNote, scale) => {
   const gamma = buildGamma(fromNote, gammaSteps[scale.name]);
   const currentChordSteps = chordSteps[scale.name];
   const chordNotes = currentChordSteps.map((chordStep) => gamma[chordStep]);
@@ -40,15 +43,11 @@ const buildChord = (fromNote, scale) => {
   return chordNotes;
 };
 
-const calcFret = (fromNote, string, offset = 0) => {
-  const note = allNotes.find((note) => note.is(fromNote));
+export const calcFret = (fromNote, string, offset = 0) => {
+  const note = allNotes.find((currNote) => currNote.is(fromNote));
 
   const startFret = (note.index - string.note.index + allNotesCount) % allNotesCount;
   const fret = startFret + (allNotesCount * offset);
 
   return fret;
 };
-
-console.log(buildGamma('Db', gammaSteps.major));
-console.log(buildChord('Db', scales.major));
-console.log(calcFret('Db', giutarTunings.classic.getStringByOrder(6)));
