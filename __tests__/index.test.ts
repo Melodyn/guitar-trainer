@@ -1,5 +1,5 @@
 import { gammaSteps, scales, tunings } from '../src/constants';
-import { buildGamma, buildChord, calcFret } from '../src';
+import { buildGamma, buildChord, calcFret } from '../src/functions';
 
 describe('major', () => {
   test('buildGamma Db', () => {

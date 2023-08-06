@@ -1,51 +1,70 @@
 import type * as t from './types';
-import * as u from './utils';
 import {
-  allNotes,
-  fullNotes,
-  //
   allNotesCount,
-  fullNotesCount,
-  //
-  gammaSteps,
-  chordSteps
+  tunings,
 } from './constants';
 
-export const buildGamma: t.buildGamma = (fromNote, steps) => {
-  let noteIndex = allNotes.findIndex((note) => note.is(fromNote));
-  const firstFullNoteOrder = fullNotes.findIndex((note) => fromNote.includes(note.tone)) + 1;
+const run = (): void => {
+  const qs = <E extends Element>(
+    selector: Parameters<typeof document.querySelector>[0],
+    on: Element | Document = document,
+  ): E => {
+    const element = on.querySelector<E>(selector);
+    if (element !== null) return element;
+    throw new Error(`Not found element by selecotr "${selector}"`);
+  };
+  const selectTone = (note: t.gnote): t.alterToneName => note.tone.length > 1 ? '' : note.tone;
+  // const qsa = (selector: string, on = document): NodeListOf<Element> => on.querySelectorAll(selector);
 
-  const gamma = [];
-  for (let step = 0; step < fullNotesCount; step += 1) {
-    const toneStep = steps[step];
-    const fullNoteIndex = (firstFullNoteOrder + step) % fullNotesCount;
-    const fullNote = fullNotes[fullNoteIndex];
-    noteIndex = (noteIndex + toneStep) % allNotesCount;
-    const note = allNotes[noteIndex];
-    const tone = note.getTone(fullNote.tone);
-    if (tone === null) {
-      throw new Error(`Note ${note.tone} does not contain a tone ${fullNote.tone}`);
+  const prepareArray = (plus: number = 0): number[] => Array(allNotesCount + 1).fill(0).map((_, i) => i + plus);
+
+  const createElement = <E extends HTMLElement>(
+    tagName: Parameters<typeof document.createElement>[0],
+    params: {
+      textContent: Node['textContent']
+    } = { textContent: '' },
+  ): E => {
+    const element = document.createElement(tagName);
+    element.textContent = params.textContent;
+    return element as E;
+  };
+
+  const preaparedValues = {
+    head: prepareArray(),
+    body: tunings.classic.notes.map((note) => note.notes),
+    foot: prepareArray(allNotesCount),
+  };
+  const elTable = qs<HTMLTableElement>('table');
+
+  Object.entries(preaparedValues).forEach(([name, values]) => {
+    const makeRows = (elContainer: Element, items: number[] | t.gnote[], order?: number): void => {
+      const elRow = createElement<HTMLTableRowElement>('tr');
+      let firstColumnTextContent = '';
+      if (order !== undefined) {
+        firstColumnTextContent = order?.toString();
+      }
+      const firstColumn = createElement<HTMLTableCellElement>('td', { textContent: firstColumnTextContent });
+      elRow.append(firstColumn);
+      items.forEach((value) => {
+        const col = createElement<HTMLTableCellElement>('td', {
+          textContent: (typeof value === 'number') ? value.toString() : selectTone(value),
+        });
+        elRow.append(col);
+      });
+      elContainer.append(elRow);
+    };
+
+    if (name === 'head') {
+      makeRows(qs('thead', elTable), values as number[]);
+    } else if (name === 'foot') {
+      makeRows(qs('tfoot', elTable), values as number[]);
+    } else {
+      const elTableBody = qs('tbody', elTable);
+      values.forEach((notes, index) => {
+        makeRows(elTableBody, notes as t.gnote[], index + 1);
+      });
     }
-    gamma.push(tone);
-  }
-
-  return gamma as t.gamma;
+  });
 };
 
-export const buildChord: t.buildChord = (fromNote, scale) => {
-  const gamma = buildGamma(fromNote, gammaSteps[scale.name]);
-  const currentChordSteps = chordSteps[scale.name];
-  const chordNotes = currentChordSteps.map((chordStep) => gamma[chordStep]);
-  chordNotes.unshift(fromNote);
-
-  return chordNotes as t.chord;
-};
-
-export const calcFret: t.calcFret = (fromNote, string, offset = 0) => {
-  const note = u.find(allNotes, (currNote) => currNote.is(fromNote));
-
-  const startFret = (note.index - string.note.index + allNotesCount) % allNotesCount;
-  const fret = startFret + (allNotesCount * offset);
-
-  return fret;
-};
+document.addEventListener('DOMContentLoaded', run);
