@@ -14,3 +14,6 @@ rules:
   "@typescript-eslint/semi": ["error", "always"]
   "@typescript-eslint/no-extra-semi": "error"
   "@typescript-eslint/comma-dangle": ["error", "always-multiline"]
+  "@typescript-eslint/consistent-type-definitions": ["error", "type"]
+  "@typescript-eslint/consistent-type-assertions": ["error", { assertionStyle: 'angle-bracket' }]
+  "@typescript-eslint/space-before-function-paren": "off"

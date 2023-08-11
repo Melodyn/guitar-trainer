@@ -1,7 +1,7 @@
 import type * as t from '../types';
 import * as u from '../utils';
 
-export const generateAllnotes = (): t.note[] => {
+export const generateAllNotes = (): t.note[] => {
   type notePicked = Pick<t.note, 'tone' | 'alterTone' | 'octaveOrder'>;
 
   const baseNotes: notePicked[] = [
@@ -16,22 +16,26 @@ export const generateAllnotes = (): t.note[] => {
     { tone: 'G#', alterTone: 'Ab', octaveOrder: 9 },
     { tone: 'A', alterTone: '', octaveOrder: 10 },
     { tone: 'A#', alterTone: 'Bb', octaveOrder: 11 },
-    { tone: 'B', alterTone: 'Cb', octaveOrder: 12 }
+    { tone: 'B', alterTone: 'Cb', octaveOrder: 12 },
   ];
 
-  const allNotes: t.note[] = baseNotes.map((note, index) => ({
+  const notes: t.note[] = baseNotes.map((note, index) => ({
     ...note,
+    activeTone: 'tone',
     index,
     is: (tone) => ((note.tone === tone) || note.alterTone === tone),
-    getTone: (tone) => {
+    getActiveTone: (tone) => {
       if (note.tone.includes(tone)) {
-        return note.tone;
+        return 'tone';
       }
-      return note.alterTone.includes(tone) ? note.alterTone : null;
-    }
+      return note.alterTone.includes(tone) ? 'alterTone' : null;
+    },
+    toString() {
+      return this[this.activeTone];
+    },
   }));
 
-  return allNotes;
+  return notes;
 };
 
 export const generateOctaves = (): t.octave[] => {
@@ -40,7 +44,7 @@ export const generateOctaves = (): t.octave[] => {
     { nameRus: 'малая', sinceNumber: 3, color: '#f2cca2', index: 0 },
     { nameRus: 'первая', sinceNumber: 4, color: '#a6c4e4', index: 0 },
     { nameRus: 'вторая', sinceNumber: 5, color: '#cda8bc', index: 0 },
-    { nameRus: 'третья', sinceNumber: 6, color: '#edcdcc', index: 0 }
+    { nameRus: 'третья', sinceNumber: 6, color: '#edcdcc', index: 0 },
   ];
 
   return octaves.map((octave, index) => {
@@ -57,50 +61,54 @@ export const generateTunings = (allNotes: t.note[], octaves: t.octave[]): t.tuni
           note: u.find(allNotes, ({ tone }) => (tone === 'E')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 4)),
           order: 0,
-          notes: []
+          notes: [],
         },
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'B')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 3)),
           order: 0,
-          notes: []
+          notes: [],
         },
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'G')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 3)),
           order: 0,
-          notes: []
+          notes: [],
         },
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'D')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 3)),
           order: 0,
-          notes: []
+          notes: [],
         },
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'A')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 2)),
           order: 0,
-          notes: []
+          notes: [],
         },
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'E')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 2)),
           order: 0,
-          notes: []
-        }
+          notes: [],
+        },
       ],
-      getStringByOrder (order) {
+      getStringByOrder(order) {
         return this.notes[(order - 1) % this.notes.length];
-      }
-    }
+      },
+    },
   };
   Object.values(tunings).forEach((tuning) => {
     tuning.notes.forEach((string, order) => {
       string.order = order + 1;
       string.notes = [];
       let octaveIndex = string.octave.index;
-      for (let noteOrder = string.note.index; noteOrder <= allNotes.length + string.note.index; noteOrder += 1) {
+      for (
+        let noteOrder = string.note.index;
+        noteOrder <= allNotes.length + string.note.index;
+        noteOrder += 1
+      ) {
         const noteIndex = noteOrder % allNotes.length;
         octaveIndex += (noteIndex === 0) ? 1 : 0;
         const octave = octaves[octaveIndex];

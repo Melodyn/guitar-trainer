@@ -8,43 +8,59 @@ import {
   fullNotesCount,
   //
   gammaSteps,
-  chordSteps
+  chordSteps,
 } from './constants';
 
 export const buildGamma: t.buildGamma = (fromNote, steps) => {
-  let noteIndex = allNotes.findIndex((note) => note.is(fromNote));
-  const firstFullNoteOrder = fullNotes.findIndex((note) => fromNote.includes(note.tone)) + 1;
+  let noteIndex = fromNote.index;
+  let fullNoteIndex = fullNotes.findIndex((note) => fromNote[fromNote.activeTone].includes(note.tone));
 
-  const gamma = [];
-  for (let step = 0; step < fullNotesCount; step += 1) {
-    const toneStep = steps[step];
-    const fullNoteIndex = (firstFullNoteOrder + step) % fullNotesCount;
+  const notes: t.gamma['notes'] = Array(steps.length + 1).fill(null).map((_, step) => {
+    if (step === 0) {
+      return {
+        ...fromNote,
+      };
+    }
+
+    fullNoteIndex = (fullNoteIndex + 1) % fullNotesCount;
     const fullNote = fullNotes[fullNoteIndex];
+    const toneStep = steps[step - 1];
     noteIndex = (noteIndex + toneStep) % allNotesCount;
     const note = allNotes[noteIndex];
-    const tone = note.getTone(fullNote.tone);
-    if (tone === null) {
+    const activeTone = note.getActiveTone(fullNote.tone);
+    if (activeTone === null) {
       throw new Error(`Note ${note.tone} does not contain a tone ${fullNote.tone}`);
     }
-    gamma.push(tone);
-  }
+    const newNote: t.note = {
+      ...note,
+      activeTone,
+    };
+    return newNote;
+  });
 
-  return gamma as t.gamma;
+  return {
+    notes,
+    toString() {
+      return this.notes.map((note) => note.toString()).join('');
+    },
+  };
 };
 
 export const buildChord: t.buildChord = (fromNote, scale) => {
   const gamma = buildGamma(fromNote, gammaSteps[scale.name]);
   const currentChordSteps = chordSteps[scale.name];
-  const chordNotes = currentChordSteps.map((chordStep) => gamma[chordStep]);
-  chordNotes.unshift(fromNote);
+  const notes = currentChordSteps.map((chordStep) => gamma.notes[chordStep - 1]);
 
-  return chordNotes as t.chord;
+  return {
+    notes,
+    toString() {
+      return this.notes.map((note) => note.toString()).join('');
+    },
+  };
 };
 
 export const calcFret: t.calcFret = (fromNote, string, offset = 0) => {
-  const note = u.find(allNotes, (currNote) => currNote.is(fromNote));
-
-  const startFret = (note.index - string.note.index + allNotesCount) % allNotesCount;
+  const startFret = (fromNote.index - string.note.index + allNotesCount) % allNotesCount;
   const fret = startFret + (allNotesCount * offset);
 
   return fret;

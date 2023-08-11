@@ -1,102 +1,145 @@
-import { gammaSteps, scales, tunings } from '../src/constants';
+import { allNotes, gammaSteps, scales, tunings } from '../src/constants';
 import { buildGamma, buildChord, calcFret } from '../src/functions';
+import * as u from '../src/utils';
+import type * as t from '../src/types';
+
+const genNote = (toneName: t.toneName): t.note => {
+  const note = u.find(allNotes, (note) => note.is(toneName));
+  return {
+    ...note,
+    activeTone: (note.tone === toneName) ? 'tone' : 'alterTone',
+  };
+};
+
+const repositoryExpect = expect.objectContaining({
+  notes: expect.any(Array),
+  toString: expect.any(Function),
+});
 
 describe('major', () => {
+  const noteEb = genNote('Db');
+
   test('buildGamma Db', () => {
-    expect(buildGamma('Db', gammaSteps.major)).toEqual([
-      'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C', 'Db'
-    ]);
+    const gamma = buildGamma(noteEb, gammaSteps.major);
+    expect(gamma).toEqual(repositoryExpect);
+    expect(gamma.toString()).toEqual([
+      'Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C', 'Db',
+    ].join(''));
   });
 
   test('buildChord Db', () => {
-    expect(buildChord('Db', scales.major)).toEqual([
-      'Db', 'F', 'Ab'
-    ]);
+    const chord = buildChord(noteEb, scales.major);
+    expect(chord).toEqual(repositoryExpect);
+    expect(chord.toString()).toEqual([
+      'Db', 'F', 'Ab',
+    ].join(''));
   });
 
   test('calcFret Db', () => {
-    expect(calcFret('Db', tunings.classic.getStringByOrder(6))).toEqual(9);
+    expect(calcFret(noteEb, tunings.classic.getStringByOrder(6))).toEqual(9);
+    expect(calcFret(noteEb, tunings.classic.getStringByOrder(6), 1)).toEqual(21);
   });
 
   // B
+  const noteB = genNote('B');
 
   test('buildGamma B', () => {
-    expect(buildGamma('B', gammaSteps.major)).toEqual([
-      'C#', 'D#', 'E', 'F#', 'G#', 'A#', 'B'
-    ]);
+    const gamma = buildGamma(noteB, gammaSteps.major);
+    expect(gamma).toEqual(repositoryExpect);
+    expect(gamma.toString()).toEqual([
+      'B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#', 'B',
+    ].join(''));
   });
 
   test('buildChord B', () => {
-    expect(buildChord('B', scales.major)).toEqual([
-      'B', 'D#', 'F#'
-    ]);
+    const chord = buildChord(noteB, scales.major);
+    expect(chord).toEqual(repositoryExpect);
+    expect(chord.toString()).toEqual([
+      'B', 'D#', 'F#',
+    ].join(''));
   });
 
   test('calcFret B', () => {
-    expect(calcFret('B', tunings.classic.getStringByOrder(2))).toEqual(0);
+    expect(calcFret(noteB, tunings.classic.getStringByOrder(2))).toEqual(0);
+    expect(calcFret(noteB, tunings.classic.getStringByOrder(2), 1)).toEqual(12);
   });
 });
 
 describe('minor', () => {
-  test('buildGamma G', () => {
-    expect(buildGamma('G', gammaSteps.minor)).toEqual([
-      'A', 'Bb', 'C', 'D', 'Eb', 'F', 'G'
-    ]);
+  const noteEb = genNote('Eb');
+
+  test('buildGamma Eb', () => {
+    const gamma = buildGamma(noteEb, gammaSteps.minor);
+    expect(gamma).toEqual(repositoryExpect);
+    expect(gamma.toString()).toEqual([
+      'Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db', 'Eb',
+    ].join(''));
   });
 
-  test('buildChord G', () => {
-    expect(buildChord('G', scales.minor)).toEqual([
-      'G', 'C', 'D'
-    ]);
+  test('buildChord Eb', () => {
+    const chord = buildChord(noteEb, scales.major);
+    expect(chord).toEqual(repositoryExpect);
+    expect(chord.toString()).toEqual([
+      'Eb', 'G', 'Bb',
+    ].join(''));
   });
 
-  test('calcFret G', () => {
-    expect(calcFret('G', tunings.classic.getStringByOrder(5))).toEqual(10);
+  test('calcFret Eb', () => {
+    expect(calcFret(noteEb, tunings.classic.getStringByOrder(5))).toEqual(6);
+    expect(calcFret(noteEb, tunings.classic.getStringByOrder(5), 1)).toEqual(18);
   });
 
   // E
+  const noteE = genNote('E');
 
   test('buildGamma E', () => {
-    expect(buildGamma('E', gammaSteps.minor)).toEqual([
-      'F#', 'G', 'A', 'B', 'C', 'D', 'E'
-    ]);
+    const gamma = buildGamma(noteE, gammaSteps.minor);
+    expect(gamma).toEqual(repositoryExpect);
+    expect(gamma.toString()).toEqual([
+      'E', 'F#', 'G', 'A', 'B', 'C', 'D', 'E',
+    ].join(''));
   });
 
   test('buildChord E', () => {
-    expect(buildChord('E', scales.minor)).toEqual([
-      'E', 'A', 'B'
-    ]);
+    const chord = buildChord(noteE, scales.major);
+    expect(chord).toEqual(repositoryExpect);
+    expect(chord.toString()).toEqual([
+      'E', 'G#', 'B',
+    ].join(''));
   });
 
   test('calcFret E', () => {
-    expect(calcFret('E', tunings.classic.getStringByOrder(3))).toEqual(9);
+    expect(calcFret(noteE, tunings.classic.getStringByOrder(3))).toEqual(9);
+    expect(calcFret(noteE, tunings.classic.getStringByOrder(3), 1)).toEqual(21);
   });
 });
 
-const noteExpect = {
+const noteExpect: Record<keyof t.note, any> = {
   tone: expect.any(String),
   alterTone: expect.any(String),
+  activeTone: expect.any(String),
   octaveOrder: expect.any(Number),
   index: expect.any(Number),
   is: expect.any(Function),
-  getTone: expect.any(Function)
+  getActiveTone: expect.any(Function),
+  toString: expect.any(Function),
 };
-const octaveExpect = {
+const octaveExpect: Record<keyof t.octave, any> = {
   nameRus: expect.any(String),
   sinceNumber: expect.any(Number),
   color: expect.any(String),
-  index: expect.any(Number)
+  index: expect.any(Number),
 };
 
 describe('guitar classic tuning', () => {
   test('has strings', () => {
     expect(tunings.classic.notes).toEqual(expect.arrayContaining([
-      {
+      expect.objectContaining({
         note: noteExpect,
         octave: octaveExpect,
         order: expect.any(Number),
-        notes: expect.any(Array)
-      }
+        notes: expect.any(Array),
+      }),
     ]));
   });
 
@@ -104,8 +147,8 @@ describe('guitar classic tuning', () => {
     expect(tunings.classic.notes[1].notes).toEqual(expect.arrayContaining([
       {
         ...noteExpect,
-        octave: octaveExpect
-      }
+        octave: octaveExpect,
+      },
     ]));
   });
 });
