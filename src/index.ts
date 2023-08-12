@@ -39,10 +39,12 @@ const createElement = <E extends HTMLElement>(
   };
   const element = document.createElement(tagName);
   element.textContent = mergedParams.textContent;
-  element.classList.add(...mergedParams.classList);
-  if (mergedParams.className.length > 0) {
+  if (mergedParams.classList.length > 0) {
+    element.classList.add(...mergedParams.classList);
+  } else if (mergedParams.className.length > 0) {
     element.className = mergedParams.className;
   }
+
   return <E>element;
 };
 
