@@ -20,14 +20,11 @@ export const scales: t.scales = Object.freeze({
   },
 });
 
-export const gammaSteps: t.gammaStepsByScales = {
+export const defaultGammaSteps: t.gammaStepsByScales = {
   [t.scaleName.minor]: [2, 1, 2, 2, 1, 2, 2],
   [t.scaleName.major]: [2, 2, 1, 2, 2, 2, 1],
 };
 
-export const chordSteps: t.chordStepsByScales = {
-  [t.scaleName.minor]: [1, 3, 5],
-  [t.scaleName.major]: [1, 3, 5],
-};
+export const defaultChordSteps: t.chordSteps = [1, 3, 5];
 
 export const tunings = u.generateTunings(allNotes, octaves);

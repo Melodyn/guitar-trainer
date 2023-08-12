@@ -1,5 +1,4 @@
 import type * as t from './types';
-import * as u from './utils';
 import {
   allNotes,
   fullNotes,
@@ -7,15 +6,16 @@ import {
   allNotesCount,
   fullNotesCount,
   //
-  gammaSteps,
-  chordSteps,
+  defaultGammaSteps,
+  defaultChordSteps,
 } from './constants';
 
-export const buildGamma: t.buildGamma = (fromNote, steps) => {
+export const buildGamma: t.buildGamma = (fromNote, scale, stepsByScale = defaultGammaSteps) => {
+  const steps = stepsByScale[scale.name];
   let noteIndex = fromNote.index;
   let fullNoteIndex = fullNotes.findIndex((note) => fromNote[fromNote.activeTone].includes(note.tone));
 
-  const notes: t.gamma['notes'] = Array(steps.length + 1).fill(null).map((_, step) => {
+  const notes: t.repository['notes'] = Array(steps.length + 1).fill(null).map((_, step) => {
     if (step === 0) {
       return {
         ...fromNote,
@@ -40,24 +40,20 @@ export const buildGamma: t.buildGamma = (fromNote, steps) => {
 
   return {
     notes,
+    scale,
     toString() {
       return this.notes.map((note) => note.toString()).join('');
     },
   };
 };
 
-export const buildChord: t.buildChord = (fromNote, scale) => {
-  const gamma = buildGamma(fromNote, gammaSteps[scale.name]);
-  const currentChordSteps = chordSteps[scale.name];
-  const notes = currentChordSteps.map((chordStep) => gamma.notes[chordStep - 1]);
-
-  return {
-    notes,
-    toString() {
-      return this.notes.map((note) => note.toString()).join('');
-    },
-  };
-};
+export const buildChord: t.buildChord = (gamma, steps = defaultChordSteps) => ({
+  notes: steps.map((chordStep) => gamma.notes[chordStep - 1]),
+  scale: gamma.scale,
+  toString() {
+    return this.notes.map((note) => note.toString()).join('');
+  },
+});
 
 export const calcFret: t.calcFret = (fromNote, string, offset = 0) => {
   const startFret = (fromNote.index - string.note.index + allNotesCount) % allNotesCount;

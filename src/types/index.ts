@@ -27,7 +27,7 @@ export enum scaleName {
   minor = 'minor',
   major = 'major',
 }
-type scale = {
+export type scale = {
   name: scaleName
   notePostfix: 'm' | ''
 };
@@ -35,23 +35,22 @@ export type scales = {
   [key in scaleName]: scale
 };
 
-export type gamma = {
+export type repository = {
   notes: note[]
+  scale: scale
   toString: () => string
 };
+
+export type gamma = repository;
 type gammaStep = 2 | 1;
 type gammaSteps = [gammaStep, gammaStep, gammaStep, gammaStep, gammaStep, gammaStep, gammaStep];
 export type gammaStepsByScales = { [key in scaleName]: gammaSteps };
-export type buildGamma = (fromNote: note, steps: gammaSteps) => gamma;
+export type buildGamma = (fromNote: note, scale: scale, stepsByScale?: gammaStepsByScales) => gamma;
 
-export type chord = {
-  notes: note[]
-  toString: () => string
-};
+export type chord = repository;
 type chordStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-type chordSteps = chordStep[];
-export type chordStepsByScales = { [key in scaleName]: chordSteps };
-export type buildChord = (fromNote: note, scale: scale) => chord;
+export type chordSteps = chordStep[];
+export type buildChord = (gamma: gamma, steps?: chordSteps) => chord;
 
 export type gnote = note & { octave: octave };
 export type gstring = {
@@ -61,7 +60,7 @@ export type gstring = {
   notes: gnote[]
 };
 export type tuning = Record<string, {
-  notes: gstring[]
+  strings: gstring[]
   getStringByOrder: (order: gstring['order']) => gstring
 }>;
 

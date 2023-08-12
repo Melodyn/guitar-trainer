@@ -1,4 +1,4 @@
-import { allNotes, gammaSteps, scales, tunings } from '../src/constants';
+import { allNotes, scales, tunings } from '../src/constants';
 import { buildGamma, buildChord, calcFret } from '../src/functions';
 import * as u from '../src/utils';
 import type * as t from '../src/types';
@@ -11,16 +11,17 @@ const genNote = (toneName: t.toneName): t.note => {
   };
 };
 
-const repositoryExpect = expect.objectContaining({
+const repositoryExpect: Record<keyof t.repository, any> = {
   notes: expect.any(Array),
+  scale: expect.any(Object),
   toString: expect.any(Function),
-});
+};
 
 describe('major', () => {
   const noteEb = genNote('Db');
 
   test('buildGamma Db', () => {
-    const gamma = buildGamma(noteEb, gammaSteps.major);
+    const gamma = buildGamma(noteEb, scales.major);
     expect(gamma).toEqual(repositoryExpect);
     expect(gamma.toString()).toEqual([
       'Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C', 'Db',
@@ -28,7 +29,7 @@ describe('major', () => {
   });
 
   test('buildChord Db', () => {
-    const chord = buildChord(noteEb, scales.major);
+    const chord = buildChord(buildGamma(noteEb, scales.major));
     expect(chord).toEqual(repositoryExpect);
     expect(chord.toString()).toEqual([
       'Db', 'F', 'Ab',
@@ -44,7 +45,7 @@ describe('major', () => {
   const noteB = genNote('B');
 
   test('buildGamma B', () => {
-    const gamma = buildGamma(noteB, gammaSteps.major);
+    const gamma = buildGamma(noteB, scales.major);
     expect(gamma).toEqual(repositoryExpect);
     expect(gamma.toString()).toEqual([
       'B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#', 'B',
@@ -52,7 +53,7 @@ describe('major', () => {
   });
 
   test('buildChord B', () => {
-    const chord = buildChord(noteB, scales.major);
+    const chord = buildChord(buildGamma(noteB, scales.major));
     expect(chord).toEqual(repositoryExpect);
     expect(chord.toString()).toEqual([
       'B', 'D#', 'F#',
@@ -69,7 +70,7 @@ describe('minor', () => {
   const noteEb = genNote('Eb');
 
   test('buildGamma Eb', () => {
-    const gamma = buildGamma(noteEb, gammaSteps.minor);
+    const gamma = buildGamma(noteEb, scales.minor);
     expect(gamma).toEqual(repositoryExpect);
     expect(gamma.toString()).toEqual([
       'Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db', 'Eb',
@@ -77,10 +78,10 @@ describe('minor', () => {
   });
 
   test('buildChord Eb', () => {
-    const chord = buildChord(noteEb, scales.major);
+    const chord = buildChord(buildGamma(noteEb, scales.minor));
     expect(chord).toEqual(repositoryExpect);
     expect(chord.toString()).toEqual([
-      'Eb', 'G', 'Bb',
+      'Eb', 'Gb', 'Bb',
     ].join(''));
   });
 
@@ -93,7 +94,7 @@ describe('minor', () => {
   const noteE = genNote('E');
 
   test('buildGamma E', () => {
-    const gamma = buildGamma(noteE, gammaSteps.minor);
+    const gamma = buildGamma(noteE, scales.minor);
     expect(gamma).toEqual(repositoryExpect);
     expect(gamma.toString()).toEqual([
       'E', 'F#', 'G', 'A', 'B', 'C', 'D', 'E',
@@ -101,10 +102,10 @@ describe('minor', () => {
   });
 
   test('buildChord E', () => {
-    const chord = buildChord(noteE, scales.major);
+    const chord = buildChord(buildGamma(noteE, scales.minor));
     expect(chord).toEqual(repositoryExpect);
     expect(chord.toString()).toEqual([
-      'E', 'G#', 'B',
+      'E', 'G', 'B',
     ].join(''));
   });
 
@@ -133,7 +134,7 @@ const octaveExpect: Record<keyof t.octave, any> = {
 
 describe('guitar classic tuning', () => {
   test('has strings', () => {
-    expect(tunings.classic.notes).toEqual(expect.arrayContaining([
+    expect(tunings.classic.strings).toEqual(expect.arrayContaining([
       expect.objectContaining({
         note: noteExpect,
         octave: octaveExpect,
@@ -144,7 +145,7 @@ describe('guitar classic tuning', () => {
   });
 
   test('second string has notes', () => {
-    expect(tunings.classic.notes[1].notes).toEqual(expect.arrayContaining([
+    expect(tunings.classic.strings[1].notes).toEqual(expect.arrayContaining([
       {
         ...noteExpect,
         octave: octaveExpect,

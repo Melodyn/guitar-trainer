@@ -56,7 +56,7 @@ export const generateOctaves = (): t.octave[] => {
 export const generateTunings = (allNotes: t.note[], octaves: t.octave[]): t.tuning => {
   const tunings: t.tuning = {
     classic: {
-      notes: [
+      strings: [
         {
           note: u.find(allNotes, ({ tone }) => (tone === 'E')),
           octave: u.find(octaves, ({ sinceNumber }) => (sinceNumber === 4)),
@@ -95,12 +95,12 @@ export const generateTunings = (allNotes: t.note[], octaves: t.octave[]): t.tuni
         },
       ],
       getStringByOrder(order) {
-        return this.notes[(order - 1) % this.notes.length];
+        return this.strings[(order - 1) % this.strings.length];
       },
     },
   };
   Object.values(tunings).forEach((tuning) => {
-    tuning.notes.forEach((string, order) => {
+    tuning.strings.forEach((string, order) => {
       string.order = order + 1;
       string.notes = [];
       let octaveIndex = string.octave.index;
