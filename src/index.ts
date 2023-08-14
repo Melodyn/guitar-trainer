@@ -25,7 +25,7 @@ const qs = <E extends Element>(
   throw new Error(`Not found element by selector "${selector}"`);
 };
 
-const prepareArray = (length = allNotesCount, plus: number = 0): number[] => Array(length + 1).fill(0).map((_, i) => i + plus);
+const prepareArray = (plus: number = 0, length = allNotesCount): number[] => Array(length + 1).fill(0).map((_, i) => i + plus);
 
 const createElement = <E extends HTMLElement>(
   tagName: qsFirstParameter,
@@ -125,7 +125,7 @@ const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName): HTMLOption
   const elOption = createElement<HTMLOptionElement>('option', { textContent: toneName });
   elOption.value = toneName;
   if (toneName === tonica) {
-    elOption.selected = true;
+    elOption.toggleAttribute('selected');
   }
   return elOption;
 };
@@ -161,31 +161,77 @@ const run = (): void => {
   const strings = buildStrings(gamma, isChord);
   renderNotes(elTableBody, strings);
 
-  document.forms.configurator.elements.isChord.addEventListener('change', () => {
-    isChord = document.forms.configurator.elements.isChord.checked;
+  const rerenderStrings = () => {
+    gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
     const strings = buildStrings(gamma, isChord);
 
     renderNotes(elTableBody, strings);
+  };
+
+  const rerenderScale = () => {
+    activeGammas = gammas.filter((gamma) => gamma.scale.name === scale.name);
+    const hasCurrentTonica = activeGammas.some(({ notes }) => notes[0][notes[0].activeTone] === tonica);
+    tonica = hasCurrentTonica ? tonica : <t.toneName>activeGammas[0].notes[0][activeGammas[0].notes[0].activeTone];
+
+    rerenderStrings();
+  };
+
+  document.forms.configurator.elements.isChord.addEventListener('change', () => {
+    isChord = document.forms.configurator.elements.isChord.checked;
+
+    rerenderStrings();
   });
 
   document.forms.configurator.elements.scale.addEventListener('change', () => {
     scale = scales[<t.scaleName>document.forms.configurator.elements.scale.value];
-    activeGammas = gammas.filter((gamma) => gamma.scale.name === scale.name);
-    const hasCurrentTonica = activeGammas.some(({ notes }) => notes[0][notes[0].activeTone] === tonica);
-    tonica = hasCurrentTonica ? tonica : <t.toneName>activeGammas[0].notes[0][activeGammas[0].notes[0].activeTone];
-    gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
-    const strings = buildStrings(gamma, isChord);
 
-    renderGammas(elGammaList, activeGammas, tonica);
-    renderNotes(elTableBody, strings);
+    rerenderScale();
+  });
+
+  document.forms.configurator.elements.scale.addEventListener('keydown', (e) => {
+    const elScale = e.target;
+
+    if (e.code === 'ArrowDown' && elScale.selectedIndex === (elScale.length - 1)) {
+      e.preventDefault();
+      elScale.selectedIndex = 0;
+      scale = scales[<t.scaleName>elScale[elScale.selectedIndex].value];
+
+      rerenderScale();
+    }
+
+    if (e.code === 'ArrowUp' && elScale.selectedIndex === 0) {
+      e.preventDefault();
+      elScale.selectedIndex = (elScale.length - 1);
+      scale = scales[<t.scaleName>elScale[elScale.selectedIndex].value];
+
+      rerenderScale();
+    }
   });
 
   document.forms.configurator.elements.gamma.addEventListener('change', () => {
     tonica = <t.toneName>document.forms.configurator.elements.gamma.value;
-    gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
-    const strings = buildStrings(gamma, isChord);
 
-    renderNotes(elTableBody, strings);
+    rerenderStrings();
+  });
+
+  document.forms.configurator.elements.gamma.addEventListener('keydown', (e) => {
+    const elGamma = e.target;
+
+    if (e.code === 'ArrowDown' && elGamma.selectedIndex === (elGamma.length - 1)) {
+      e.preventDefault();
+      elGamma.selectedIndex = 0;
+      tonica = elGamma[elGamma.selectedIndex].value;
+
+      rerenderStrings();
+    }
+
+    if (e.code === 'ArrowUp' && elGamma.selectedIndex === 0) {
+      e.preventDefault();
+      elGamma.selectedIndex = (elGamma.length - 1);
+      tonica = elGamma[elGamma.selectedIndex].value;
+
+      rerenderStrings();
+    }
   });
 };
 
