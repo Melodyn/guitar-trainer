@@ -121,8 +121,15 @@ const renderNotes = (elTableBody: HTMLTableSectionElement, strings: t.gstring[])
   });
 };
 
-const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName): HTMLOptionElement => {
-  const elOption = createElement<HTMLOptionElement>('option', { textContent: toneName });
+const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName, scale: t.scale): HTMLOptionElement => {
+  let textContent: string = toneName;
+  if (toneName === 'Gb' && scale.name === 'major') {
+    textContent = 'F# / Gb';
+  }
+  if (toneName === 'D#' && scale.name === 'minor') {
+    textContent = 'Eb / D#';
+  }
+  const elOption = createElement<HTMLOptionElement>('option', { textContent });
   elOption.value = toneName;
   if (toneName === tonica) {
     elOption.toggleAttribute('selected');
@@ -130,12 +137,14 @@ const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName): HTMLOption
   return elOption;
 };
 
-const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica: t.toneName): void => {
+const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica: t.toneName, scale: t.scale): void => {
   elGammaList.innerHTML = '';
   gammas.forEach((gamma) => {
     const gammaTonica = gamma.notes[0];
-    const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica);
-    elGammaList.append(elOption);
+    if (gammaTonica[gammaTonica.activeTone] !== 'F#' && gammaTonica[gammaTonica.activeTone] !== 'Eb') {
+      const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica, scale);
+      elGammaList.append(elOption);
+    }
   });
 };
 
@@ -156,7 +165,7 @@ const run = (): void => {
   let gamma: t.gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
 
   const elGammaList = <HTMLSelectElement>document.forms.configurator.elements.gamma;
-  renderGammas(elGammaList, activeGammas, tonica);
+  renderGammas(elGammaList, activeGammas, tonica, scale);
 
   const strings = buildStrings(gamma, isChord);
   renderNotes(elTableBody, strings);
@@ -165,6 +174,7 @@ const run = (): void => {
     gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
     const strings = buildStrings(gamma, isChord);
 
+    renderGammas(elGammaList, activeGammas, tonica, scale);
     renderNotes(elTableBody, strings);
   };
 
@@ -176,14 +186,14 @@ const run = (): void => {
     rerenderStrings();
   };
 
-  document.forms.configurator.elements.isChord.addEventListener('change', () => {
-    isChord = document.forms.configurator.elements.isChord.checked;
+  document.forms.configurator.elements.isChord.addEventListener('change', (e) => {
+    isChord = e.target.checked;
 
     rerenderStrings();
   });
 
-  document.forms.configurator.elements.scale.addEventListener('change', () => {
-    scale = scales[<t.scaleName>document.forms.configurator.elements.scale.value];
+  document.forms.configurator.elements.scale.addEventListener('change', (e) => {
+    scale = scales[<t.scaleName>e.target.value];
 
     rerenderScale();
   });
@@ -208,8 +218,8 @@ const run = (): void => {
     }
   });
 
-  document.forms.configurator.elements.gamma.addEventListener('change', () => {
-    tonica = <t.toneName>document.forms.configurator.elements.gamma.value;
+  document.forms.configurator.elements.gamma.addEventListener('change', (e) => {
+    tonica = <t.toneName>e.target.value;
 
     rerenderStrings();
   });
