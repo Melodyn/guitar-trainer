@@ -164,13 +164,17 @@ const run = (): void => {
   let activeGammas = gammas.filter((gamma) => gamma.scale.name === scale.name);
   let gamma: t.gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
 
-  const elGammaList = <HTMLSelectElement>document.forms.configurator.elements.gamma;
+  const elFormConfigurator = document.forms.namedItem('configurator');
+  if (elFormConfigurator === null) {
+    throw new Error();
+  }
+  const elGammaList = qs<HTMLSelectElement>('#gamma', elFormConfigurator);
   renderGammas(elGammaList, activeGammas, tonica, scale);
 
   const strings = buildStrings(gamma, isChord);
   renderNotes(elTableBody, strings);
 
-  const rerenderStrings = () => {
+  const rerenderStrings = (): void => {
     gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
     const strings = buildStrings(gamma, isChord);
 
@@ -178,7 +182,7 @@ const run = (): void => {
     renderNotes(elTableBody, strings);
   };
 
-  const rerenderScale = () => {
+  const rerenderScale = (): void => {
     activeGammas = gammas.filter((gamma) => gamma.scale.name === scale.name);
     const hasCurrentTonica = activeGammas.some(({ notes }) => notes[0][notes[0].activeTone] === tonica);
     tonica = hasCurrentTonica ? tonica : <t.toneName>activeGammas[0].notes[0][activeGammas[0].notes[0].activeTone];
@@ -186,25 +190,30 @@ const run = (): void => {
     rerenderStrings();
   };
 
-  document.forms.configurator.elements.isChord.addEventListener('change', (e) => {
-    isChord = e.target.checked;
+  const elIsChord = qs<HTMLInputElement>('#isChord', elFormConfigurator);
+  elIsChord.addEventListener('change', (e) => {
+    const elInput = <HTMLInputElement>e.target;
+    isChord = elInput.checked;
 
     rerenderStrings();
   });
 
-  document.forms.configurator.elements.scale.addEventListener('change', (e) => {
-    scale = scales[<t.scaleName>e.target.value];
+  const elScale = qs<HTMLSelectElement>('#scale', elFormConfigurator);
+  elScale.addEventListener('change', (e) => {
+    const elSelect = <HTMLSelectElement>e.target;
+    scale = scales[<t.scaleName>elSelect.value];
 
     rerenderScale();
   });
 
-  document.forms.configurator.elements.scale.addEventListener('keydown', (e) => {
-    const elScale = e.target;
+  elScale.addEventListener('keydown', (e) => {
+    const elScale = <HTMLSelectElement>e.target;
 
     if (e.code === 'ArrowDown' && elScale.selectedIndex === (elScale.length - 1)) {
       e.preventDefault();
       elScale.selectedIndex = 0;
-      scale = scales[<t.scaleName>elScale[elScale.selectedIndex].value];
+      const elOption = <HTMLOptionElement>elScale.item(elScale.selectedIndex);
+      scale = scales[<t.scaleName>elOption.value];
 
       rerenderScale();
     }
@@ -212,25 +221,29 @@ const run = (): void => {
     if (e.code === 'ArrowUp' && elScale.selectedIndex === 0) {
       e.preventDefault();
       elScale.selectedIndex = (elScale.length - 1);
-      scale = scales[<t.scaleName>elScale[elScale.selectedIndex].value];
+      const elOption = <HTMLOptionElement>elScale.item(elScale.selectedIndex);
+      scale = scales[<t.scaleName>elOption.value];
 
       rerenderScale();
     }
   });
 
-  document.forms.configurator.elements.gamma.addEventListener('change', (e) => {
-    tonica = <t.toneName>e.target.value;
+  const elGammaSelect = qs<HTMLSelectElement>('#gamma', elFormConfigurator);
+  elGammaSelect.addEventListener('change', (e) => {
+    const elGamma = <HTMLSelectElement>e.target;
+    tonica = <t.toneName>elGamma.value;
 
     rerenderStrings();
   });
 
-  document.forms.configurator.elements.gamma.addEventListener('keydown', (e) => {
-    const elGamma = e.target;
+  elGammaSelect.addEventListener('keydown', (e) => {
+    const elGamma = <HTMLSelectElement>e.target;
 
     if (e.code === 'ArrowDown' && elGamma.selectedIndex === (elGamma.length - 1)) {
       e.preventDefault();
       elGamma.selectedIndex = 0;
-      tonica = elGamma[elGamma.selectedIndex].value;
+      const elOption = <HTMLOptionElement>elGamma.item(elGamma.selectedIndex);
+      tonica = <t.toneName>elOption.value;
 
       rerenderStrings();
     }
@@ -238,7 +251,8 @@ const run = (): void => {
     if (e.code === 'ArrowUp' && elGamma.selectedIndex === 0) {
       e.preventDefault();
       elGamma.selectedIndex = (elGamma.length - 1);
-      tonica = elGamma[elGamma.selectedIndex].value;
+      const elOption = <HTMLOptionElement>elGamma.item(elGamma.selectedIndex);
+      tonica = <t.toneName>elOption.value;
 
       rerenderStrings();
     }
