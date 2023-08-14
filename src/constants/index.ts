@@ -25,6 +25,8 @@ export const defaultGammaSteps: t.gammaStepsByScales = {
   [t.scaleName.major]: [2, 2, 1, 2, 2, 2, 1],
 };
 
+export const gammas = u.generateGammas();
+
 export const defaultChordSteps: t.chordSteps = [1, 3, 5];
 
 export const tunings = u.generateTunings(allNotes, octaves);

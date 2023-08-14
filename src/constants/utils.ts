@@ -1,3 +1,5 @@
+import { allNotes, scales } from '.';
+import { buildGamma } from '../functions';
 import type * as t from '../types';
 import * as u from '../utils';
 
@@ -36,6 +38,30 @@ export const generateAllNotes = (): t.note[] => {
   }));
 
   return notes;
+};
+
+export const generateGammas = (): t.gamma[] => {
+  const gammas: t.gamma[] = allNotes.flatMap((note) => {
+    const alterNote: t.note = { ...note, activeTone: 'alterTone' };
+    const innerGammas = [];
+
+    try {
+      innerGammas.push(buildGamma(note, scales.major));
+    } catch (e) { }
+    try {
+      innerGammas.push(buildGamma(alterNote, scales.major));
+    } catch (e) { }
+    try {
+      innerGammas.push(buildGamma(note, scales.minor));
+    } catch (e) { }
+    try {
+      innerGammas.push(buildGamma(alterNote, scales.minor));
+    } catch (e) { }
+
+    return innerGammas;
+  });
+
+  return gammas;
 };
 
 export const generateOctaves = (): t.octave[] => {
