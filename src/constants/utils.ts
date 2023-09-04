@@ -7,7 +7,7 @@ export const generateAllNotes = (): t.note[] => {
   type notePicked = Pick<t.note, 'tone' | 'alterTone' | 'octaveOrder'>;
 
   const baseNotes: notePicked[] = [
-    { tone: 'C', alterTone: '', octaveOrder: 1 },
+    { tone: 'C', alterTone: 'B#', octaveOrder: 1 },
     { tone: 'C#', alterTone: 'Db', octaveOrder: 2 },
     { tone: 'D', alterTone: '', octaveOrder: 3 },
     { tone: 'D#', alterTone: 'Eb', octaveOrder: 4 },
@@ -43,20 +43,16 @@ export const generateAllNotes = (): t.note[] => {
 export const generateGammas = (): t.gamma[] => {
   const gammas: t.gamma[] = allNotes.flatMap((note) => {
     const alterNote: t.note = { ...note, activeTone: 'alterTone' };
-    const innerGammas = [];
+    const innerGammas: t.gamma[] = [];
 
-    try {
-      innerGammas.push(buildGamma(note, scales.major));
-    } catch (e) { }
-    try {
-      innerGammas.push(buildGamma(alterNote, scales.major));
-    } catch (e) { }
-    try {
-      innerGammas.push(buildGamma(note, scales.minor));
-    } catch (e) { }
-    try {
-      innerGammas.push(buildGamma(alterNote, scales.minor));
-    } catch (e) { }
+    Object.values(scales).forEach((scale) => {
+      try {
+        innerGammas.push(buildGamma(note, scale));
+      } catch (e) { }
+      try {
+        innerGammas.push(buildGamma(alterNote, scale));
+      } catch (e) { }
+    });
 
     return innerGammas;
   });

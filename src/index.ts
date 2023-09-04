@@ -122,14 +122,7 @@ const renderNotes = (elTableBody: HTMLTableSectionElement, strings: t.gstring[])
 };
 
 const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName, scale: t.scale): HTMLOptionElement => {
-  let textContent: string = toneName;
-  if (toneName === 'Gb' && scale.name === 'major') {
-    textContent = 'F# / Gb';
-  }
-  if (toneName === 'D#' && scale.name === 'minor') {
-    textContent = 'Eb / D#';
-  }
-  const elOption = createElement<HTMLOptionElement>('option', { textContent });
+  const elOption = createElement<HTMLOptionElement>('option', { textContent: toneName });
   elOption.value = toneName;
   if (toneName === tonica) {
     elOption.toggleAttribute('selected');
@@ -141,10 +134,8 @@ const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica:
   elGammaList.innerHTML = '';
   gammas.forEach((gamma) => {
     const gammaTonica = gamma.notes[0];
-    if (gammaTonica[gammaTonica.activeTone] !== 'F#' && gammaTonica[gammaTonica.activeTone] !== 'Eb') {
-      const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica, scale);
-      elGammaList.append(elOption);
-    }
+    const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica, scale);
+    elGammaList.append(elOption);
   });
 };
 

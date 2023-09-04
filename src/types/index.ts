@@ -1,5 +1,5 @@
 export type fullToneName = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
-export type toneName = fullToneName | 'C#' | 'Db' | 'D#' | 'Eb' | 'E#' | 'F#' | 'Gb' | 'G#' | 'Ab' | 'A#' | 'Bb' | 'Cb';
+export type toneName = fullToneName | 'C#' | 'Db' | 'D#' | 'Eb' | 'E#' | 'F#' | 'Gb' | 'G#' | 'Ab' | 'A#' | 'Bb' | 'B#' | 'Cb';
 export type alterToneName = toneName | '';
 export type activeToneType = 'tone' | 'alterTone';
 
@@ -24,8 +24,12 @@ export type octave = {
 };
 
 export enum scaleName {
-  minor = 'minor',
   major = 'major',
+  garmajor = 'garmajor',
+  melmajor = 'melmajor',
+  minor = 'minor',
+  garminor = 'garminor',
+  melminor = 'melminor',
 }
 export type scale = {
   name: scaleName
@@ -42,7 +46,7 @@ export type repository = {
 };
 
 export type gamma = repository;
-type gammaStep = 2 | 1;
+type gammaStep = 3 | 2 | 1;
 type gammaSteps = [gammaStep, gammaStep, gammaStep, gammaStep, gammaStep, gammaStep, gammaStep];
 export type gammaStepsByScales = { [key in scaleName]: gammaSteps };
 export type buildGamma = (fromNote: note, scale: scale, stepsByScale?: gammaStepsByScales) => gamma;
