@@ -12,6 +12,10 @@
       width: 30px;
       height: 30px;
     }
+
+    #keys tr:first-child {
+      height: 60px;
+    }
   </style>
 </head>
 
@@ -52,10 +56,47 @@
 
     <div class="row pb-3">
       <div class="col">
-        <table class="table table-bordered align-middle text-center w-auto">
+        <table id="string" class="table table-bordered align-middle text-center w-auto">
           <thead class="align-middle"></thead>
           <tbody></tbody>
           <tfoot></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="row pb-3">
+      <div class="col">
+        <table id="keys" class="table table-borderless text-center w-auto">
+          <tbody>
+            <tr>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+              <td class="bg-dark border"></td>
+              <td class="bg-light border"></td>
+            </tr>
+            <tr id="keys__notes">
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>

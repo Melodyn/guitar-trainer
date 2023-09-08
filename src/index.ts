@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import type * as t from './types';
 import {
+  allNotes,
   allNotesCount,
   scales,
   tunings,
@@ -89,6 +90,13 @@ const makeRowEl = (
   return elRow;
 };
 
+const makeKeyCellEls = (
+  items: t.note[],
+): HTMLTableCellElement[] => items.map((value) => createElement<HTMLTableCellElement>('td', {
+  textContent: value.toString(),
+  className: 'p-0',
+}));
+
 const buildStrings = (gamma: t.gamma, isChord: boolean = false): t.gstring[] => {
   const repo = isChord ? buildChord(gamma) : gamma;
 
@@ -110,6 +118,22 @@ const buildStrings = (gamma: t.gamma, isChord: boolean = false): t.gstring[] => 
   return strings;
 };
 
+const buildKeys = (gamma: t.gamma, isChord: boolean = false): t.note[] => {
+  const repo = isChord ? buildChord(gamma) : gamma;
+
+  const twoOctave = allNotes.concat(allNotes);
+
+  let repoNoteIndex = 0;
+  return twoOctave.map((currNote): t.note => {
+    const repoNote = repo.notes[repoNoteIndex];
+    if (repoNoteIndex < repo.notes.length && repoNote.is(<t.toneName>currNote[currNote.activeTone])) {
+      repoNoteIndex += 1;
+      return { ...repoNote };
+    }
+    return <t.note>{ toString: () => '' };
+  });
+};
+
 const renderNotes = (elTableBody: HTMLTableSectionElement, strings: t.gstring[]): void => {
   elTableBody.innerHTML = '';
   strings.forEach((string) => {
@@ -118,6 +142,14 @@ const renderNotes = (elTableBody: HTMLTableSectionElement, strings: t.gstring[])
       order: string.order,
     });
     elTableBody.append(elTableBodyRow);
+  });
+};
+
+const renderKeys = (elTableKeysNotesRow: HTMLTableRowElement, notes: t.note[]): void => {
+  const cells = makeKeyCellEls(notes);
+  elTableKeysNotesRow.innerHTML = '';
+  cells.forEach((cell) => {
+    elTableKeysNotesRow.append(cell);
   });
 };
 
@@ -140,14 +172,16 @@ const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica:
 };
 
 const run = (): void => {
-  const elTable = qs<HTMLTableElement>('table');
-  const elTableHead = qs<HTMLTableSectionElement>('thead', elTable);
-  const elTableBody = qs<HTMLTableSectionElement>('tbody', elTable);
-  const elTableFoot = qs<HTMLTableSectionElement>('tfoot', elTable);
-  const elTableHeadRow = makeRowEl(prepareArray());
-  const elTableFootRow = makeRowEl(prepareArray(allNotesCount));
-  elTableHead.append(elTableHeadRow);
-  elTableFoot.append(elTableFootRow);
+  const elTableString = qs<HTMLTableElement>('table#string');
+  const elTableStringHead = qs<HTMLTableSectionElement>('thead', elTableString);
+  const elTableStringBody = qs<HTMLTableSectionElement>('tbody', elTableString);
+  const elTableStringFoot = qs<HTMLTableSectionElement>('tfoot', elTableString);
+  const elTableStringHeadRow = makeRowEl(prepareArray());
+  const elTableStringFootRow = makeRowEl(prepareArray(allNotesCount));
+  elTableStringHead.append(elTableStringHeadRow);
+  elTableStringFoot.append(elTableStringFootRow);
+
+  const elTableKeysNotesRow = qs<HTMLTableRowElement>('table#keys tr#keys__notes');
 
   let isChord = false;
   let tonica: t.toneName = 'C';
@@ -163,14 +197,17 @@ const run = (): void => {
   renderGammas(elGammaList, activeGammas, tonica, scale);
 
   const strings = buildStrings(gamma, isChord);
-  renderNotes(elTableBody, strings);
+  renderNotes(elTableStringBody, strings);
+
+  renderKeys(elTableKeysNotesRow, buildKeys(gamma, isChord));
 
   const rerenderStrings = (): void => {
     gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
     const strings = buildStrings(gamma, isChord);
 
+    renderKeys(elTableKeysNotesRow, buildKeys(gamma, isChord));
     renderGammas(elGammaList, activeGammas, tonica, scale);
-    renderNotes(elTableBody, strings);
+    renderNotes(elTableStringBody, strings);
   };
 
   const rerenderScale = (): void => {
