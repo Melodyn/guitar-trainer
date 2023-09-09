@@ -6,6 +6,7 @@ import {
   scales,
   tunings,
   gammas,
+  fullNotes,
 } from './constants';
 import { buildChord } from './functions';
 import { find } from './utils';
@@ -15,6 +16,13 @@ type creParams = {
   textContent?: Node['textContent']
   classList?: string[]
   className?: string
+  attributes?: Record<string, string>
+};
+type tStaffNote = Extract<t.fullToneName, 'G'> | Extract<t.fullToneName, 'F'> | Extract<t.fullToneName, 'C'>;
+const staffNoteStartNoteMap: Record<tStaffNote, t.fullToneName> = {
+  G: 'C',
+  C: 'D',
+  F: 'E',
 };
 
 const qs = <E extends Element>(
@@ -25,6 +33,10 @@ const qs = <E extends Element>(
   if (element !== null) return element;
   throw new Error(`Not found element by selector "${selector}"`);
 };
+const qsa = <E extends Element>(
+  selector: qsFirstParameter,
+  on: Element | Document = document,
+): NodeListOf<E> => on.querySelectorAll<E>(selector);
 
 const prepareArray = (plus: number = 0, length = allNotesCount): number[] => Array(length + 1).fill(0).map((_, i) => i + plus);
 
@@ -36,6 +48,7 @@ const createElement = <E extends HTMLElement>(
     textContent: '',
     classList: [],
     className: '',
+    attributes: {},
     ...params,
   };
   const element = document.createElement(tagName);
@@ -45,6 +58,9 @@ const createElement = <E extends HTMLElement>(
   } else if (mergedParams.className.length > 0) {
     element.className = mergedParams.className;
   }
+  Object.entries(mergedParams.attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
 
   return <E>element;
 };
@@ -153,21 +169,49 @@ const renderKeys = (elTableKeysNotesRow: HTMLTableRowElement, notes: t.note[]): 
   });
 };
 
-const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName, scale: t.scale): HTMLOptionElement => {
-  const elOption = createElement<HTMLOptionElement>('option', { textContent: toneName });
-  elOption.value = toneName;
+const makeGammaOptionEl = (toneName: t.toneName, tonica: t.toneName): HTMLOptionElement => {
+  const elOption = createElement<HTMLOptionElement>('option', {
+    textContent: toneName,
+    attributes: { value: toneName },
+  });
   if (toneName === tonica) {
     elOption.toggleAttribute('selected');
   }
   return elOption;
 };
 
-const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica: t.toneName, scale: t.scale): void => {
+const renderGammas = (elGammaList: HTMLSelectElement, gammas: t.gamma[], tonica: t.toneName): void => {
   elGammaList.innerHTML = '';
   gammas.forEach((gamma) => {
     const gammaTonica = gamma.notes[0];
-    const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica, scale);
+    const elOption = makeGammaOptionEl(<t.toneName>gammaTonica[gammaTonica.activeTone], tonica);
     elGammaList.append(elOption);
+  });
+};
+
+const renderStaff = (
+  elTableStaffNotesRows: NodeListOf<HTMLTableRowElement>,
+  gamma: t.gamma,
+  staffNote: tStaffNote,
+  isChord: boolean = false,
+): void => {
+  const preparedNotes = gamma.notes.filter((_, i) => i < 7);
+  const notes: t.note[] = !isChord
+    ? preparedNotes
+    : preparedNotes.map((n, i) => {
+      if (i === 0 || i === 2 || i === 4) {
+        return n;
+      }
+      return { ...n, toString: () => '' };
+    });
+  const gammaNoteIndex = notes
+    .reverse()
+    .findIndex((note) => note[note.activeTone].startsWith(staffNoteStartNoteMap[staffNote]));
+
+  elTableStaffNotesRows.forEach((elRow, i) => {
+    const elCell = qs<HTMLTableCellElement>('td', elRow);
+    const index = (gammaNoteIndex + i) % notes.length;
+    elCell.textContent = notes[index].toString();
   });
 };
 
@@ -182,19 +226,23 @@ const run = (): void => {
   elTableStringFoot.append(elTableStringFootRow);
 
   const elTableKeysNotesRow = qs<HTMLTableRowElement>('table#keys tr#keys__notes');
+  const elTableStaffNotesRows = qsa<HTMLTableRowElement>('table#staff__notes tr');
 
   let isChord = false;
   let tonica: t.toneName = 'C';
+  let staffNote: tStaffNote = 'G';
   let scale: t.scale = scales.major;
   let activeGammas = gammas.filter((gamma) => gamma.scale.name === scale.name);
   let gamma: t.gamma = find(activeGammas, (gm) => (gm.notes[0][gm.notes[0].activeTone] === tonica));
+
+  renderStaff(elTableStaffNotesRows, gamma, staffNote);
 
   const elFormConfigurator = document.forms.namedItem('configurator');
   if (elFormConfigurator === null) {
     throw new Error();
   }
   const elGammaList = qs<HTMLSelectElement>('#gamma', elFormConfigurator);
-  renderGammas(elGammaList, activeGammas, tonica, scale);
+  renderGammas(elGammaList, activeGammas, tonica);
 
   const strings = buildStrings(gamma, isChord);
   renderNotes(elTableStringBody, strings);
@@ -206,8 +254,9 @@ const run = (): void => {
     const strings = buildStrings(gamma, isChord);
 
     renderKeys(elTableKeysNotesRow, buildKeys(gamma, isChord));
-    renderGammas(elGammaList, activeGammas, tonica, scale);
+    renderGammas(elGammaList, activeGammas, tonica);
     renderNotes(elTableStringBody, strings);
+    renderStaff(elTableStaffNotesRows, gamma, staffNote, isChord);
   };
 
   const rerenderScale = (): void => {
@@ -285,6 +334,27 @@ const run = (): void => {
       rerenderStrings();
     }
   });
+
+  const elStaffNoteSelect = qs<HTMLSelectElement>('#staff__note');
+  elStaffNoteSelect.addEventListener('change', (e) => {
+    const elStaffNote = <HTMLSelectElement>e.target;
+    staffNote = <tStaffNote>elStaffNote.value;
+
+    renderStaff(elTableStaffNotesRows, gamma, staffNote, isChord);
+  });
+
+  elStaffNoteSelect.append(createElement<HTMLOptionElement>('option', {
+    textContent: 'G (скрипичный)',
+    attributes: { value: 'G', selected: 'selected' },
+  }));
+  elStaffNoteSelect.append(createElement<HTMLOptionElement>('option', {
+    textContent: 'F (басовый)',
+    attributes: { value: 'F' },
+  }));
+  elStaffNoteSelect.append(createElement<HTMLOptionElement>('option', {
+    textContent: 'C (альтовый)',
+    attributes: { value: 'C' },
+  }));
 };
 
 document.addEventListener('DOMContentLoaded', run);
